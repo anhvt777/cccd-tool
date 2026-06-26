@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BM01A - Đọc QR CCCD hàng loạt</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--b:#006b5b;--b2:#008b78;--g:#f2b705;--bg:#f5faf8;--line:#cfe2dd;--txt:#17332f;--red:#bf241c;--mut:#607a75}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:Arial,Helvetica,sans-serif}header{background:linear-gradient(90deg,var(--b),var(--b2));border-bottom:5px solid var(--g);color:#fff;padding:15px 16px}h1{font-size:20px;margin:0 0 5px}header p{font-size:13px;margin:0;opacity:.96}main{max-width:1180px;margin:14px auto 90px;padding:0 12px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}h2{font-size:17px;margin:0 0 12px;color:var(--b)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.btn{border:0;border-radius:11px;padding:11px 13px;font-weight:700;cursor:pointer;background:var(--b);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:42px}.btn.alt{background:#e9f5f2;color:var(--b);border:1px solid #b5d6cf}.btn.warn{background:var(--g);color:#17332f}.btn.danger{background:var(--red);color:#fff}.muted{color:var(--mut);font-size:13px;line-height:1.45}.ok{color:var(--b);font-weight:700}.error{color:var(--red);font-weight:700}.note{background:#fff8dc;border:1px solid #f0d672;border-radius:10px;padding:10px;font-size:13px;line-height:1.5}.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{border:1px solid var(--line);border-radius:12px;padding:12px;background:#f9fffd}.stat b{font-size:22px;color:var(--b);display:block}.tablewrap{overflow:auto;max-height:56vh;border:1px solid var(--line);border-radius:12px;background:#fff}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid #e7efed;padding:8px;text-align:left;white-space:nowrap;vertical-align:top}th{background:#eef7f4;color:var(--b);position:sticky;top:0;z-index:1}.status-ok{color:#006b5b;font-weight:700}.status-dup{color:#a46a00;font-weight:700}.status-err{color:#bf241c;font-weight:700}.progress{height:10px;background:#e7efed;border-radius:999px;overflow:hidden;margin-top:10px}.bar{height:100%;width:0;background:var(--b);transition:width .2s}.footer{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);box-shadow:0 -3px 12px rgba(0,0,0,.08);padding:10px 12px;z-index:10}.footer .inner{max-width:1180px;margin:auto;display:flex;gap:10px;align-items:center;justify-content:flex-end}.hide{display:none!important}#reader{height:1px;width:1px;overflow:hidden;opacity:0;position:absolute;left:-9999px}.filebox{border:1px dashed #a8cac2;border-radius:12px;background:#f3fbf9;padding:14px}.pill{display:inline-block;border:1px solid #b5d6cf;border-radius:999px;background:#e9f5f2;color:var(--b);padding:4px 9px;font-size:12px;font-weight:700;margin-right:5px}.smallInput{width:150px;padding:10px;border:1px solid #c7d9d5;border-radius:10px;font-size:14px}.downloadBtn{background:var(--b)!important;color:#fff!important}#outPanel{display:none;position:fixed;left:10px;right:10px;bottom:84px;max-height:72vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 7px 28px rgba(0,0,0,.22);padding:12px;z-index:25}#outPanel .close{float:right;border:0;background:#eee;border-radius:8px;padding:8px 12px;font-weight:700;color:#255}@media(max-width:800px){.statgrid{grid-template-columns:1fr 1fr}.footer .inner{align-items:stretch}.footer .btn{flex:1}.row .btn{flex:1}.smallInput{width:100%}h1{font-size:18px}}
+</style>
+</head>
+<body>
+<header><h1>BM01A - Đọc QR CCCD hàng loạt</h1><p>Chọn nhiều ảnh QR căn cước, web tự đọc dữ liệu và xuất Excel .xlsx. Xử lý cục bộ trên trình duyệt, không gửi ảnh lên máy chủ.</p></header>
+<main>
+<div id="reader"></div>
+<section class="card">
+<h2>1) Chọn nhiều ảnh QR CCCD</h2>
+<div class="filebox">
+<input type="file" id="files" accept="image/*" multiple class="hide">
+<div class="row"><button class="btn" id="btnPick">Chọn nhiều ảnh</button><button class="btn warn" id="btnRun">Đọc tất cả ảnh</button><button class="btn alt" id="btnClear">Xóa danh sách</button></div>
+<p class="muted" id="fileInfo">Chưa chọn ảnh. Có thể chọn nhiều file cùng lúc từ Ảnh/Files trên iPhone hoặc máy tính.</p>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<p id="msg" class="muted"></p>
+</div>
+<div class="note" style="margin-top:10px"><b>Mẹo tăng tỷ lệ đọc:</b> ảnh nên chụp riêng vùng QR, không lóa, không bị nghiêng quá nhiều. Web sẽ tự thử nhiều lớp đọc: ảnh gốc, tăng tương phản, đen trắng, đảo màu và BarcodeDetector nếu trình duyệt hỗ trợ.</div>
+</section>
+<section class="card">
+<h2>2) Thiết lập mặc định cho file Excel</h2>
+<div class="row">
+<label class="muted">CN/PGD <input class="smallInput" id="defBranch" value="PGD Đường 9"></label>
+<label class="muted">Dịch vụ <input class="smallInput" id="defService" value=""></label>
+<label class="muted">Mã AM <input class="smallInput" id="defAM" value=""></label>
+<label class="muted">Mã RM <input class="smallInput" id="defRM" value=""></label>
+<label class="muted">Mã CBGT <input class="smallInput" id="defCBGT" value=""></label>
+</div>
+</section>
+<section class="card">
+<h2>3) Thống kê</h2>
+<div class="statgrid"><div class="stat"><b id="stTotal">0</b><span>Tổng ảnh</span></div><div class="stat"><b id="stOk">0</b><span>Đọc được</span></div><div class="stat"><b id="stDup">0</b><span>Trùng CCCD</span></div><div class="stat"><b id="stErr">0</b><span>Lỗi/không đọc được</span></div></div>
+</section>
+<section class="card">
+<h2>4) Kết quả đọc QR</h2>
+<div class="row" style="margin-bottom:10px"><button class="btn alt" id="btnExportXlsx">Xuất Excel .xlsx</button><button class="btn alt" id="btnExportCsv">Xuất CSV</button><button class="btn alt" id="btnCopy">Copy bảng</button></div>
+<div class="tablewrap"><table id="tbl"><thead><tr><th>STT</th><th>Tên file</th><th>Trạng thái</th><th>Họ tên</th><th>CCCD</th><th>Ngày sinh</th><th>Giới tính</th><th>Ngày cấp</th><th>Địa chỉ</th><th>Ghi chú</th></tr></thead><tbody></tbody></table></div>
+</section>
+</main>
+<div id="outPanel"><button class="close" onclick="hidePanel()">Đóng</button><div id="outContent"></div></div>
+<div class="footer"><div class="inner"><span id="foot" class="muted" style="margin-right:auto">Sẵn sàng đọc QR hàng loạt.</span><button class="btn warn" id="btnExportXlsx2">Xuất Excel .xlsx</button></div></div>
+<script>
+const $=id=>document.getElementById(id), filesEl=$("files"), tbody=$("tbl").querySelector("tbody"), OUT=$("outPanel"), OUTC=$("outContent");
+let selectedFiles=[], results=[];
+const HEAD=["STT","Thời gian đọc","Tên file ảnh","Trạng thái đọc","Ghi chú","CCCD","CMND cũ","Họ tên","Ngày sinh","Giới tính","Địa chỉ thường trú","Ngày cấp","CN/PGD","SĐT","Email","CIF","Dịch vụ","Mã AM","Mã RM","Mã CBGT","QR gốc"];
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function setMsg(t,c="muted"){const e=$("msg");e.className=c;e.textContent=t;$("foot").textContent=t}
+function normDate(v){v=String(v||"").trim();if(/^\d{8}$/.test(v))return`${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;return v.replaceAll("-","/").replaceAll(".","/")}
+function parseQR(raw){raw=String(raw||"").trim();const p=raw.split("|").map(x=>x.trim());const d={raw,oldId:"",idNo:"",fullName:"",dob:"",gender:"",address:"",issueDate:""};if(p.length>=6){d.idNo=p[0]||"";d.oldId=p[1]||"";d.fullName=p[2]||p[1]||"";d.dob=normDate(p[3]||"");d.gender=p[4]||"";d.address=p[5]||"";d.issueDate=normDate(p[6]||"")}return d}
+function statusClass(s){return s==="OK"?"status-ok":s.includes("TRÙNG")?"status-dup":"status-err"}
+function updateStats(){const total=results.length, ok=results.filter(r=>r.status==="OK").length, dup=results.filter(r=>r.status.includes("TRÙNG")).length, err=results.filter(r=>r.status!=="OK"&&!r.status.includes("TRÙNG")).length;$("stTotal").textContent=total;$("stOk").textContent=ok;$("stDup").textContent=dup;$("stErr").textContent=err}
+function render(){tbody.innerHTML=results.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.fileName)}</td><td class="${statusClass(r.status)}">${esc(r.status)}</td><td>${esc(r.fullName)}</td><td>${esc(r.idNo)}</td><td>${esc(r.dob)}</td><td>${esc(r.gender)}</td><td>${esc(r.issueDate)}</td><td>${esc(r.address)}</td><td>${esc(r.note)}</td></tr>`).join("");updateStats()}
+function setProgress(done,total){$("bar").style.width=total?Math.round(done*100/total)+"%":"0%"}
+function canvasFromFile(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const max=1800,scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.max(1,Math.floor(img.width*scale));c.height=Math.max(1,Math.floor(img.height*scale));c.getContext("2d",{willReadFrequently:true}).drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(img.src);res(c)};img.onerror=rej;img.src=URL.createObjectURL(file)})}
+function cloneProcessed(src,mode){const c=document.createElement("canvas");c.width=src.width;c.height=src.height;const ctx=c.getContext("2d",{willReadFrequently:true});ctx.drawImage(src,0,0);let im=ctx.getImageData(0,0,c.width,c.height),d=im.data;for(let i=0;i<d.length;i+=4){let g=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114);if(mode===1)g=Math.max(0,Math.min(255,(g-128)*1.8+128));if(mode===2)g=g>145?255:0;if(mode===3)g=255-g;if(mode===4)g=g>110?255:0;d[i]=d[i+1]=d[i+2]=g}ctx.putImageData(im,0,0);return c}
+function tryJsQR(c){if(!window.jsQR||!c)return null;const tries=[c,cloneProcessed(c,1),cloneProcessed(c,2),cloneProcessed(c,3),cloneProcessed(c,4)];for(const cc of tries){try{const ctx=cc.getContext("2d",{willReadFrequently:true}),im=ctx.getImageData(0,0,cc.width,cc.height);const r=jsQR(im.data,cc.width,cc.height,{inversionAttempts:"attemptBoth"});if(r&&r.data)return r.data}catch(e){}}return null}
+async function tryBarcodeDetector(c){try{if(!("BarcodeDetector" in window)||!c)return null;const det=new BarcodeDetector({formats:["qr_code"]});const a=await det.detect(c);return a&&a[0]&&(a[0].rawValue||a[0].rawData)}catch(e){return null}}
+async function tryHtml5(file){try{if(!window.Html5Qrcode)return null;const q=new Html5Qrcode("reader");const txt=await q.scanFile(file,false);try{await q.clear()}catch(e){}return txt}catch(e){return null}}
+async function readOne(file,idx,seen){let raw="",note=[];try{raw=await tryHtml5(file);if(raw)note.push("html5-qrcode");if(!raw){const c=await canvasFromFile(file);raw=await tryBarcodeDetector(c);if(raw)note.push("BarcodeDetector");if(!raw){raw=tryJsQR(c);if(raw)note.push("jsQR xử lý ảnh")}}
+if(!raw)return {fileName:file.name,status:"KHÔNG ĐỌC ĐƯỢC QR",note:"Ảnh mờ/lóa/quá xa hoặc không có QR rõ",raw:"",oldId:"",idNo:"",fullName:"",dob:"",gender:"",address:"",issueDate:""};
+const d=parseQR(raw);let status="OK", msg=note.join(" + ");if(!d.idNo||!d.fullName){status="THIẾU DỮ LIỆU";msg+="; QR thiếu CCCD hoặc họ tên"}else if(seen.has(d.idNo)){status="TRÙNG CCCD";msg+="; đã có CCCD này trong danh sách"}else seen.add(d.idNo);return {fileName:file.name,status,note:msg,raw,...d}
+}catch(e){return {fileName:file.name,status:"LỖI XỬ LÝ",note:e.message||String(e),raw:"",oldId:"",idNo:"",fullName:"",dob:"",gender:"",address:"",issueDate:""}}
+}
+function defaults(){return {branch:$("defBranch").value.trim(),service:$("defService").value.trim(),am:$("defAM").value.trim(),rm:$("defRM").value.trim(),cbgt:$("defCBGT").value.trim()}}
+function toRows(){const def=defaults();return results.map((r,i)=>[i+1,new Date().toLocaleString("vi-VN"),r.fileName,r.status,r.note,r.idNo,r.oldId,r.fullName,r.dob,r.gender,r.address,r.issueDate,def.branch,"","","",def.service,def.am,def.rm,def.cbgt,r.raw])}
+function previewTable(){const rows=toRows();return "<table><thead><tr>"+HEAD.map(h=>"<th>"+esc(h)+"</th>").join("")+"</tr></thead><tbody>"+rows.map(r=>"<tr>"+r.map(c=>"<td>"+esc(c)+"</td>").join("")+"</tr>").join("")+"</tbody></table>"}
+function showDownload(title,filename,blob,html){const url=URL.createObjectURL(blob);OUTC.innerHTML=`<h2>${title}</h2><p class="muted"><b>Tên file:</b> ${esc(filename)}<br>Trên iPhone bấm nút xanh, chọn Lưu vào Tệp hoặc mở bằng Excel/Files.</p><div class="row"><a class="btn downloadBtn" href="${url}" download="${esc(filename)}" target="_blank" rel="noopener">Tải ${esc(filename)}</a><button class="btn alt" id="copyOut">Copy bảng</button></div><div id="copyArea" class="tablewrap" style="max-height:45vh;margin-top:10px">${html}</div>`;OUT.style.display="block";$("copyOut").onclick=()=>copyNode($("copyArea"));setMsg(`${title} đã tạo xong. Bấm nút tải màu xanh trong khung.`,"ok")}
+function exportXlsx(){if(!results.length){setMsg("Chưa có kết quả để xuất Excel.","error");return}if(!window.XLSX){setMsg("Chưa tải được thư viện Excel. Kiểm tra mạng rồi thử lại.","error");return}const ws=XLSX.utils.aoa_to_sheet([HEAD,...toRows()]);ws["!cols"]=HEAD.map((h,i)=>({wch:[6,20,28,18,32,16,14,24,12,10,48,12,18,14,20,14,18,12,12,12,60][i]||16}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"QR CCCD");const ab=XLSX.write(wb,{bookType:"xlsx",type:"array"});const blob=new Blob([ab],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});showDownload("Excel QR CCCD hàng loạt",`qr_cccd_bulk_${new Date().toISOString().slice(0,10)}.xlsx`,blob,previewTable())}
+function csvCell(s){s=String(s??"");return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}function exportCsv(){if(!results.length){setMsg("Chưa có kết quả để xuất CSV.","error");return}const csv="\ufeff"+[HEAD,...toRows()].map(r=>r.map(csvCell).join(",")).join("\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});showDownload("CSV QR CCCD hàng loạt",`qr_cccd_bulk_${new Date().toISOString().slice(0,10)}.csv`,blob,previewTable())}
+function copyNode(node){const r=document.createRange();r.selectNode(node);const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand("copy");setMsg("Đã copy bảng. Mở Excel/Numbers và dán vào.","ok")}catch(e){setMsg("Không copy tự động được. Hãy bôi chọn bảng để copy thủ công.","error")}}
+$("btnPick").onclick=()=>filesEl.click();filesEl.onchange=e=>{selectedFiles=Array.from(e.target.files||[]);$("fileInfo").textContent=selectedFiles.length?`Đã chọn ${selectedFiles.length} ảnh.`:"Chưa chọn ảnh.";setProgress(0,selectedFiles.length)};
+$("btnRun").onclick=async()=>{if(!selectedFiles.length){setMsg("Chưa chọn ảnh QR CCCD.","error");return}results=[];render();setProgress(0,selectedFiles.length);setMsg("Đang đọc ảnh QR hàng loạt...");const seen=new Set();for(let i=0;i<selectedFiles.length;i++){setMsg(`Đang đọc ${i+1}/${selectedFiles.length}: ${selectedFiles[i].name}`);const r=await readOne(selectedFiles[i],i,seen);results.push(r);render();setProgress(i+1,selectedFiles.length);await new Promise(res=>setTimeout(res,60))}setMsg(`Hoàn tất: ${results.filter(r=>r.status==="OK").length}/${results.length} ảnh đọc được OK.`,"ok")};
+$("btnClear").onclick=()=>{selectedFiles=[];results=[];filesEl.value="";$("fileInfo").textContent="Chưa chọn ảnh.";setProgress(0,0);render();setMsg("Đã xóa danh sách.")};
+$("btnExportXlsx").onclick=exportXlsx;$("btnExportXlsx2").onclick=exportXlsx;$("btnExportCsv").onclick=exportCsv;$("btnCopy").onclick=()=>{if(!results.length){setMsg("Chưa có bảng để copy.","error");return}copyNode($("tbl"))};function hidePanel(){OUT.style.display="none"}render();
+</script>
+</body>
+</html>
