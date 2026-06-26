@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CCCD Tool - Workspace</title>
+<style>
+:root{--b:#006b5b;--b2:#008b78;--g:#f2b705;--bg:#f5faf8;--line:#cfe2dd;--txt:#17332f;--mut:#607a75}*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--txt);overflow:hidden}.app{height:100%;display:flex;flex-direction:column}.top{background:linear-gradient(90deg,var(--b),var(--b2));color:#fff;border-bottom:5px solid var(--g);padding:10px 12px}.top h1{font-size:18px;margin:0 0 3px}.top p{font-size:12px;margin:0;opacity:.95}.tabs{background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.05);padding:8px;display:flex;gap:8px;align-items:center}.tab{border:1px solid #b5d6cf;background:#e9f5f2;color:var(--b);border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer;flex:1;text-align:center}.tab.active{background:var(--b);color:#fff;border-color:var(--b)}.open{border:1px solid #e2c351;background:#fff8dc;color:#574000;border-radius:12px;padding:10px 12px;font-weight:700;text-decoration:none;white-space:nowrap}.frames{position:relative;flex:1;min-height:0;background:#f5faf8}.frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:none;background:#f5faf8}.frame.active{display:block}.hint{font-size:12px;color:var(--mut);padding:5px 10px;background:#fff}@media(max-width:760px){.top h1{font-size:16px}.top p{display:none}.tabs{gap:6px;padding:7px}.tab{font-size:13px;padding:9px 7px}.open{font-size:12px;padding:9px 8px}.hint{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><h1>CCCD Tool - Workspace</h1><p>Chuyển nhanh giữa nhập/quét từng CCCD và đọc QR CCCD hàng loạt. Các trang con vẫn chạy độc lập, không ảnh hưởng dữ liệu đang xử lý.</p></header>
+<nav class="tabs">
+<button class="tab active" data-tab="single">1) Nhập / quét từng CCCD</button>
+<button class="tab" data-tab="bulk">2) Đọc QR hàng loạt</button>
+<a class="open" id="openFull" href="../bm01a-cccd/?v=tab-main-1" target="_blank" rel="noopener">Mở toàn màn hình</a>
+</nav>
+<div class="hint" id="hint">Tab 1 dùng để quét từng khách hàng và xuất PDF BM01A. Tab 2 dùng để chọn nhiều ảnh QR và xuất Excel hàng loạt.</div>
+<section class="frames">
+<iframe class="frame active" id="frameSingle" src="../bm01a-cccd/?v=tab-main-1" allow="camera; clipboard-read; clipboard-write; fullscreen" title="BM01A CCCD"></iframe>
+<iframe class="frame" id="frameBulk" src="../bm01a-cccd-bulk/?v=tab-bulk-1" allow="camera; clipboard-read; clipboard-write; fullscreen" title="BM01A QR Bulk"></iframe>
+</section>
+</div>
+<script>
+const tabs=[...document.querySelectorAll('.tab')], frames={single:document.getElementById('frameSingle'),bulk:document.getElementById('frameBulk')}, openFull=document.getElementById('openFull'), hint=document.getElementById('hint');
+const links={single:'../bm01a-cccd/?v=tab-main-1',bulk:'../bm01a-cccd-bulk/?v=tab-bulk-1'};
+const hints={single:'Tab 1 dùng để quét từng khách hàng, bổ sung thông tin và xuất PDF BM01A.',bulk:'Tab 2 dùng để chọn nhiều ảnh QR CCCD, tự đọc dữ liệu và xuất Excel hàng loạt.'};
+function show(name){tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));Object.keys(frames).forEach(k=>frames[k].classList.toggle('active',k===name));openFull.href=links[name];hint.textContent=hints[name];try{history.replaceState(null,'','#'+name)}catch(e){}}
+tabs.forEach(b=>b.onclick=()=>show(b.dataset.tab));
+const start=(location.hash||'').replace('#','');if(start==='bulk')show('bulk');else show('single');
+</script>
+</body>
+</html>
